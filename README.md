@@ -1,4 +1,13 @@
-# PRad - Passive Radar Interface using Dump1090 (VERY ALPHA, UNFINISHED)
+# PRad - Passive Radar Interface
+
+Status: VERY ALPHA, UNFINISHED
+
+Requirements:
+- A linux shell (VM or NAS)
+- RTL-SDR Device
+- Dump1090 (fa/mu versions)
+
+
 
 Versions:
 
