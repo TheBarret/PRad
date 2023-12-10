@@ -1,12 +1,8 @@
 import time
-import json
-import pygame
-import numpy as np
 from config import (
     SCREEN_WIDTH, 
     SCREEN_HEIGHT, 
     MSCALE, 
-    MAX_TIME, 
     BASE_LAT, 
     BASE_LON, 
     BASE_LAT_RAD, 
@@ -45,6 +41,7 @@ class Craft:
         self.animation_time = 0
         self.animation_rmax = 10
         self.animation_radius = 0
+        self.animation_rev = False
         self.update_position(lat, lon, 0)
     def update_flight(self, flight):
         self.flight = flight
@@ -84,8 +81,13 @@ class Craft:
             return self.flight
         else:
             return self.id.upper()
-    def animate(self, modifier=0.03):
+    def animate(self, modifier=0.02):
         rssi_norm = 10 - abs(self.rssi)
-        self.animation_radius += rssi_norm * modifier
+        if not self.animation_rev:
+            self.animation_radius += rssi_norm * modifier
+        else:
+            self.animation_radius -= rssi_norm * modifier
         if self.animation_radius > self.animation_rmax:
-            self.animation_radius = 0
+            self.animation_rev = not self.animation_rev
+        elif self.animation_radius <= 0:
+            self.animation_rev = not self.animation_rev

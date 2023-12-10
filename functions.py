@@ -31,6 +31,12 @@ DESC = { # description of each aircraft category
     'DEFAULT': 'Undefined'
 }
 
+def draw_spacer_rings(surface, center, radius, num_rings, ring_spacing, tint=(90,90,127)):
+    for i in range(num_rings):
+        ring_radius = radius + i * ring_spacing
+        pygame.draw.circle(surface, tint, center, int(ring_radius), 1)
+
+
 def show_trace(surface, craft, tint=(124, 252, 0), folder="./crafts/"):
     craft_id = craft.id
     file_path = f"{folder}{craft_id}.json"
@@ -48,7 +54,7 @@ def show_trace(surface, craft, tint=(124, 252, 0), folder="./crafts/"):
                 ]
                 pygame.draw.lines(surface, tint, False, history_points, 1)
 
-def show_traces(surface, history, tint=(124, 252, 0), folder="./crafts/"):
+def show_traces(surface, history, tint=(50, 50, 50), folder="./crafts/"):
     for file_name in os.listdir(folder):
         if file_name.endswith(".json"):
             file_path = os.path.join(folder, file_name)

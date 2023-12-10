@@ -2,18 +2,19 @@ import os
 import time
 import json
 import pygame
-import numpy as np
-from models import Craft
-from config import (SCREEN_WIDTH, SCREEN_HEIGHT, MAX_TIME, SOFT_TIME, JSON_THROTTLE, JSON_FILEPATH, FONT1, FONT2, F1SIZE, F2SIZE, MAX_FPS)
-from functions import (color_lerp, show_traces)
 
-# Label layout
-LX, LY, LS    = 1, 1, 0          # Labels offset: X, Y, Spacing
-FW, FH        = 140, 35          # Labels size  : Width, height
+from models import Craft
+from functions import (color_lerp, show_traces, draw_spacer_rings)
+from config import (SCREEN_WIDTH, SCREEN_HEIGHT, 
+                    MAX_TIME, SOFT_TIME, 
+                    JSON_THROTTLE, JSON_FILEPATH, 
+                    FONT1, FONT2, F1SIZE, F2SIZE, 
+                    MAX_FPS, LX, LY, LS, FW, FH,
+                    SCREEN_CX, SCREEN_CY)
 
 # Initializers
-AIRCRAFTS   = []                 # list of detected aircraft
-HISTORY     = {}                 # list of history of data
+AIRCRAFTS   = []                 # Array aircraft
+HISTORY     = {}                 # Dict history (tracers)
 
 def read_json():
     try:
@@ -71,59 +72,59 @@ def save_craft_info(craft):
         json_file.write(craft_json)
 
 def render(surface, h1, h2):
-    global LX, LY, LS, FW, FH
-    lx, ly          = LX, LY    # craft plot offsets
-    ls              = LS        # craft plot spacing
-    fw, fh          = FW, FH    # craft plot width and height
-    sorted_list     = enumerate(sorted(AIRCRAFTS, key=lambda craft: craft.distance))
-    craft_alive     = True
-    current_time    = time.time()
+    lx, ly = LX, LY     # craft plot offsets (see config)
+    ls = LS             # craft plot spacing (see config)
+    fw, fh = FW, FH     # craft plot width and height
     
-    show_traces(surface, HISTORY)
-
-    for i, craft in sorted_list:
+    # Initialize total width of the stack
+    length = 0  
+    for i, craft in enumerate(sorted(AIRCRAFTS, key=lambda craft: craft.distance)):
+        craft_stale = False
+        current_time = time.time()
         ttl = current_time - craft.age
         if ttl >= SOFT_TIME:
-            craft_alive = False
-        
-        fx = lx
-        fy = ly + i * (fh + ls)
-        
-        # Draw frame
-        if craft_alive:
+            craft_stale = True
+
+        # Update horizontal offsets
+        fx = lx + length 
+        fy = ly + (fh + ls) * (i // (SCREEN_WIDTH // (fw + ls)))
+        if length + fw > SCREEN_WIDTH:
+            length = 0
+            fx = 0
+
+        # Draw rectangle
+        if not craft_stale:
             craft.animate()
             pygame.draw.rect(surface, (255, 255, 255), (fx, fy, fw, fh), 0)
             pygame.draw.rect(surface, (0, 0, 0), (fx, fy, fw, fh), 2)
         else:
             pygame.draw.rect(surface, (100, 100, 100), (fx, fy, fw, fh), 0)
             pygame.draw.rect(surface, (0, 0, 0), (fx, fy, fw, fh), 2)
-        
-        # Draw craft info 
+
+        # Draw labels
         INF1 = h1.render(f"{craft.get_flight()}", True, (0, 0, 0))
         INF2 = h2.render(f"{int(craft.altitude)}ft {int(craft.speed)}Km/s {craft.cardinal}", True, (0, 0, 0))
         INF3 = h2.render(f"{int(craft.bearing)}° {int(craft.distance)}Km {craft.type}", True, (0, 0, 0))
         surface.blit(INF1, (fx + 10, fy + 5))
         surface.blit(INF2, (fx + 10, fy + 17))
         surface.blit(INF3, (fx + 10, fy + 24))
-        
+
         # Draw blip
-        draw_aircraft(surface, craft, h1, craft_alive)
+        draw_aircraft(surface, craft, h1, craft_stale)
+        length += fw + ls    
 
 # Draw craft position
-def draw_aircraft(surface, craft, h1, alive, animation_offset=0):
+def draw_aircraft(surface, craft, h1, stale, animation_offset=0):
     x, y = craft.position
-    if alive:
-        info = h1.render(f"{craft.get_flight()}", True, (255, 0, 0))
-        surface.blit(info, (x - 25, y - 25))
-        pygame.draw.circle(surface, (255, 255, 255), (x,y), 10, 2)
+    info = h1.render(f"{craft.get_flight()}", True, (255, 0, 0))
+    surface.blit(info, (x - 25, y - 25))
+    if not stale:
         # Draw animated ping
         if craft.animation_radius > 0:
-            ping_color = color_lerp((127, 127, 127), (255, 255, 255), craft.rssi)
+            ping_color = color_lerp((127, 127, 127), (0, 255, 0), craft.rssi)
             pygame.draw.circle(surface, ping_color, (x, y), animation_offset + craft.animation_radius, 2)
     else:
-        pygame.draw.circle(surface, (100,100,100), (x,y), 5, 1)
-
-
+        pygame.draw.rect(surface, (100, 100, 100), (x - 5, y - 5, 10, 10), 1)
 
 def render_grid(surface, step=32, color=(50, 50, 50)):
     for y in range(0, SCREEN_HEIGHT + 1, step):
@@ -166,9 +167,11 @@ def main():
             read_json()
             read_time = current_time
 
+        show_traces(screen, HISTORY)
         render_grid(screen)
+        draw_spacer_rings(screen,(SCREEN_CX,SCREEN_CY),150,5,25)
         render(screen, F1, F2)
-
+        
         display_latency(screen, time.time() - latency, F1)
         pygame.display.flip()
         clock.tick(MAX_FPS)
