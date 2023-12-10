@@ -2,10 +2,7 @@
 
 Versions:
 
-![PRad](https://github.com/TheBarret/PRad/assets/25234371/2d10f7d0-e4e0-46ad-8595-b265048d609b)
-
-![PRad](https://github.com/TheBarret/PRad/assets/25234371/d83adc76-b395-408b-9f13-ac51c6388f5e)
-
+![afbeelding](https://github.com/TheBarret/PRad/assets/25234371/0e22434b-3894-4952-9714-83ee7461c696)
 
 
 ## Usage
