@@ -1,6 +1,4 @@
-import os
 import math
-import json
 import pygame
 import numpy as np
 
@@ -35,40 +33,6 @@ def draw_spacer_rings(surface, center, radius, num_rings, ring_spacing, tint=(90
     for i in range(num_rings):
         ring_radius = radius + i * ring_spacing
         pygame.draw.circle(surface, tint, center, int(ring_radius), 1)
-
-
-def show_trace(surface, craft, tint=(124, 252, 0), folder="./crafts/"):
-    craft_id = craft.id
-    file_path = f"{folder}{craft_id}.json"
-    if os.path.isfile(file_path):
-        with open(file_path, "r") as file:
-            craft_data = json.load(file)
-        if "history" in craft_data:
-            history = craft_data["history"]
-            if len(history) > 1:
-                history_points = [
-                    (
-                        int(point[0]),
-                        int(point[1])
-                    ) for point in history
-                ]
-                pygame.draw.lines(surface, tint, False, history_points, 1)
-
-def show_traces(surface, history, tint=(50, 50, 50), folder="./crafts/"):
-    for file_name in os.listdir(folder):
-        if file_name.endswith(".json"):
-            file_path = os.path.join(folder, file_name)
-            if file_path in history:
-                craft_data = history[file_path]
-            else:
-                with open(file_path, "r") as file:
-                    craft_data = json.load(file)
-                    history[file_path] = craft_data
-            if "positions" in craft_data:
-                craft_positions = craft_data["positions"]
-                if len(craft_positions) > 1:
-                    history_points = [(int(point[0]), int(point[1])) for point in craft_positions]
-                    pygame.draw.lines(surface, tint, False, history_points, 2)
 
 def draw_heading_line(surface, craft):
     if len(craft.history) < 2:
@@ -130,8 +94,8 @@ def calculate_relposition(lat, lon, BASE_LAT_RAD, BASE_LON_RAD, COS_BASE_LAT, SI
     y = radar_radius + distance * scale * np.sin(bearing)
     return x, y
 
-def calculate_bearing(lat, lon, BASE_LAT_RAD, BASE_LON):
-    bearing = calculate_bearing_offset(BASE_LAT_RAD, BASE_LON, lat, lon, 0)
+def calculate_bearing(lat, lon, BASE_LAT_RAD, BASE_LON, OFFSET=-360):
+    bearing = calculate_bearing_offset(BASE_LAT_RAD, BASE_LON, lat, lon, OFFSET)
     return bearing
 
 def calculate_bearing_offset(lat1, lon1, lat2, lon2, offset=0):
