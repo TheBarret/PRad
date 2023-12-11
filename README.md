@@ -11,7 +11,8 @@ Requirements:
 
 Versions:
 
-![afbeelding](https://github.com/TheBarret/PRad/assets/25234371/0e22434b-3894-4952-9714-83ee7461c696)
+![afbeelding](https://github.com/TheBarret/PRad/assets/25234371/b9ec96ac-a704-4fc2-a5cc-ecfda63706d9)
+
 
 
 ## Usage
