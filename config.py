@@ -25,7 +25,7 @@ FW, FH        = 140, 35          # Labels size  : Width, height
 # path to the JSON data file (change this to your dump1090 aircraft.json)
 # frequency of JSON updates (s)
 JSON_THROTTLE = 2               
-JSON_FILEPATH = r"\\192.168.2.3\LabDrive\barret\radar\aircraft.json"  
+JSON_FILEPATH = r"\\LabDrive\barret\radar\aircraft.json"  
 
 # Precompute trigonometric functions
 BASE_LAT_RAD = np.radians(BASE_LAT)  # latitude of the radar's base in radians
