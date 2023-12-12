@@ -1,31 +1,17 @@
 import numpy as np
 
 # Configurations
-SCREEN_WIDTH = 940              # width of the display
-SCREEN_HEIGHT = 850             # height of the display
-SCREEN_CX = SCREEN_WIDTH // 2   # center x of the screen
-SCREEN_CY = SCREEN_HEIGHT // 2  # center y of the screen
-MSCALE = 200                    # scale of the display
-MOFFSET = -360                  # bearing angle offset
-MAX_FPS = 32                    # maximum frames per second
-MAX_RANGE = 600                 # maximum range for reference
-MAX_TIME = 150                  # maximum age of data (s)
-SOFT_TIME = 75                  # soft age of data (s) (signal lost but might reappear)
-BASE_LAT = 52.08409688522358    # latitude of the radar's base reference (Use Google Maps (right click on the map) to obtain Lat/lon coords of your choosing)
-BASE_LON = 4.266612811234726    # longitude of the radar's base reference
-F1SIZE = 14                     # Font size for large labels
-F2SIZE = 10                     # Font size for small labels
-FONT1 = r".\fonts\CONSOLA.TTF"  # path to the large font
-FONT2 = r".\fonts\CONSOLAB.TTF" # path to the small font
+SCREEN_WIDTH    = 1024                   # width of the display
+SCREEN_HEIGHT   = 800                   # height of the display
+MAX_FPS         = 30                    # maximum frames per second (Default: 30)
+MAX_RANGE       = 600                   # maximum range for reference (Default: 300)  
+MAX_TIME        = 150                   # maximum age of data (s)
+MSCALE          = 80                    # Position scale
+BASE_LAT        = 52.3081 #52.08409688522358     # latitude of the radar's base reference
+BASE_LON        = 4.7649  #4.266612811234726     # longitude of the radar's base reference
 
-# Label layout
-LX, LY, LS    = 1, 1, 0          # Labels offset: X, Y, Spacing
-FW, FH        = 140, 35          # Labels size  : Width, height
-
-# path to the JSON data file (change this to your dump1090 aircraft.json)
-# frequency of JSON updates (s)
-JSON_THROTTLE = 2               
-JSON_FILEPATH = r"\\LabDrive\barret\radar\aircraft.json"  
+JSON_THROTTLE   = 2
+JSON_SOURCE     = r"\\192.168.2.3\LabDrive\barret\radar\aircraft.json"  
 
 # Precompute trigonometric functions
 BASE_LAT_RAD = np.radians(BASE_LAT)  # latitude of the radar's base in radians

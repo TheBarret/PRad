@@ -1,59 +1,4 @@
-import math
-import pygame
 import numpy as np
-
-SIZES = { # size of each aircraft category
-    'A0': 3,
-    'A1': 3,
-    'A2': 4,
-    'A3': 5,
-    'A4': 4,
-    'A5': 4,
-    'A6': 4,
-    'A7': 3,
-    'A8': 3,
-    'A9': 2,
-    'DEFAULT': 1
-}
-DESC = { # description of each aircraft category
-    'A0': 'Exempt',
-    'A1': 'Light',
-    'A2': 'Small',
-    'A3': 'Large',
-    'A4': 'HPerf',
-    'A5': 'Sonic',
-    'A6': 'L.craft',
-    'A7': 'Glider/Rotor',
-    'A8': 'UAS/UAV',
-    'A9': 'RC/DRONE',
-    'DEFAULT': 'Undefined'
-}
-
-def draw_spacer_rings(surface, center, radius, num_rings, ring_spacing, tint=(90,90,127)):
-    for i in range(num_rings):
-        ring_radius = radius + i * ring_spacing
-        pygame.draw.circle(surface, tint, center, int(ring_radius), 1)
-
-def draw_heading_line(surface, craft):
-    if len(craft.history) < 2:
-        return
-    center_x, center_y = craft.position
-    start_x, start_y = craft.history[0]
-    end_x, end_y = craft.history[-1]
-    angle = math.atan2(end_y - start_y, end_x - start_x)
-    line_end_x = center_x + craft.size * math.cos(angle)
-    line_end_y = center_y + craft.size * math.sin(angle)
-    pygame.draw.line(surface, (124, 252, 0), (center_x, center_y), (line_end_x, line_end_y), 1)
-
-def get_category_info(category):
-    global DESC
-    description = DESC.get(category, None)
-    return description
-
-def get_size_info(category):
-    global SIZES
-    size = SIZES.get(category, 0)
-    return size
 
 def color_lerp(color1, color2, value):
     c1 = np.array([color1[0], color1[1], color1[2]])
@@ -69,11 +14,39 @@ def normalize_rssi(rssi, min_value=-10, max_value=-1):
     norm_value = np.clip(norm_value, 0, 1)
     return norm_value
 
+def mercator_difference(x1, y1, x2, y2):
+    dx = x2 - x1
+    dy = y2 - y1
+    return np.sqrt(dx**2 + dy**2)
+
+def mercator_to_coords(x, y, SCREEN_WIDTH, SCREEN_HEIGHT, sfactor=100.0):
+    radar_radius = min(SCREEN_WIDTH, SCREEN_HEIGHT) / 2
+    scale = radar_radius / sfactor
+    x = (x - radar_radius) / scale
+    y = (y - radar_radius) / scale
+    R = 6371
+    lat_rad = 2 * np.arctan(np.exp(y / R)) - np.pi / 2
+    lon_rad = (x / R) * np.pi
+    lat = np.degrees(lat_rad)
+    lon = np.degrees(lon_rad)
+    return lat, lon
+
 def calculate_distance(lat1, lon1, lat2, lon2, COS_BASE_LAT):
     R = 6371
     dlat = np.radians(lat2 - lat1)
     dlon = np.radians(lon2 - lon1)
     a = np.sin(dlat / 2) ** 2 + COS_BASE_LAT * np.cos(np.radians(lat2)) * np.sin(dlon / 2) ** 2
+    c = 2 * np.arctan2(np.sqrt(a), np.sqrt(1 - a))
+    distance = R * c
+    return distance
+
+def calculate_distance_simple(lat1, lon1, lat2, lon2):
+    R = 6371  # Radius of the Earth in kilometers
+    lat1_rad, lon1_rad, lat2_rad, lon2_rad = np.radians([lat1, lon1, lat2, lon2])
+    dlat = lat2_rad - lat1_rad
+    dlon = lon2_rad - lon1_rad
+    # Haversine formula
+    a = np.sin(dlat / 2) ** 2 + np.cos(lat1_rad) * np.cos(lat2_rad) * np.sin(dlon / 2) ** 2
     c = 2 * np.arctan2(np.sqrt(a), np.sqrt(1 - a))
     distance = R * c
     return distance
@@ -94,7 +67,20 @@ def calculate_relposition(lat, lon, BASE_LAT_RAD, BASE_LON_RAD, COS_BASE_LAT, SI
     y = radar_radius + distance * scale * np.sin(bearing)
     return x, y
 
-def calculate_bearing(lat, lon, BASE_LAT_RAD, BASE_LON, OFFSET=-360):
+def calculate_mercposition(lat, lon, BASE_LAT, BASE_LON, SCREEN_WIDTH, SCREEN_HEIGHT, sfactor=100.0):
+    R = 6371
+    lat_rad = np.radians(lat)
+    lon_rad = np.radians(lon)
+    base_lat_rad = np.radians(BASE_LAT)
+    base_lon_rad = np.radians(BASE_LON)
+    x = R * (lon_rad - base_lon_rad)
+    y = R * np.log(np.tan(np.pi / 4 + lat_rad / 2) / np.tan(np.pi / 4 + base_lat_rad / 2))
+    scale = SCREEN_WIDTH / (2 * np.pi * R) * sfactor
+    x = SCREEN_WIDTH / 2 + x * scale
+    y = SCREEN_HEIGHT / 2 - y * scale 
+    return x, y
+
+def calculate_bearing(lat, lon, BASE_LAT_RAD, BASE_LON, OFFSET=0):
     bearing = calculate_bearing_offset(BASE_LAT_RAD, BASE_LON, lat, lon, OFFSET)
     return bearing
 
@@ -109,3 +95,7 @@ def calculate_cardinal(bearing):
     cardinals = ["N", "N-NE", "N-E", "E-NE", "E", "E-SE", "S-E", "S-SE", "S", "S-SW", "S-W", "W-SW", "W", "W-NW", "N-W", "N-NW"]
     index = round(bearing / 22.5) % 16
     return cardinals[index]
+
+def get_size(category):
+    if category == "A0":
+        return 10
