@@ -95,7 +95,3 @@ def calculate_cardinal(bearing):
     cardinals = ["N", "N-NE", "N-E", "E-NE", "E", "E-SE", "S-E", "S-SE", "S", "S-SW", "S-W", "W-SW", "W", "W-NW", "N-W", "N-NW"]
     index = round(bearing / 22.5) % 16
     return cardinals[index]
-
-def get_size(category):
-    if category == "A0":
-        return 10
