@@ -9,9 +9,8 @@ Requirements:
 
 
 
-Versions:
+![afbeelding](https://github.com/TheBarret/PRad/assets/25234371/db73c57e-99ea-462e-bea0-b8b6b17f8d85)
 
-![afbeelding](https://github.com/TheBarret/PRad/assets/25234371/b9ec96ac-a704-4fc2-a5cc-ecfda63706d9)
 
 
 
